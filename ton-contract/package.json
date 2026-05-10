@@ -1,0 +1,13 @@
+{
+  "name": "attendance-ton-contract",
+  "private": true,
+  "scripts": {
+    "build": "blueprint build",
+    "deploy:testnet": "blueprint run"
+  },
+  "devDependencies": {
+    "@ton/blueprint": "^0.32.0",
+    "@ton/core": "^0.58.1",
+    "typescript": "^5.6.3"
+  }
+}
