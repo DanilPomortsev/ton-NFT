@@ -78,7 +78,7 @@ export function App() {
 
   async function claimByHashCode() {
     if (!address) throw new Error("Connect wallet first");
-    const { beginCell } = await import("ton-core");
+    const { beginCell } = await import("@ton/core");
     const codeHash = parseHashCodeToBigInt(hashCodeInput);
     const payloadBoc = beginCell()
       .storeUint(CLAIM_BADGE_OPCODE, 32)
@@ -108,8 +108,8 @@ export function App() {
 
     const [{ TonClient }, { Address }, { AttendanceBadge }] = await Promise.all([
       import("@ton/ton"),
-      import("ton-core"),
-      import("../ton-contract/build/Attendance/Attendance_AttendanceBadge")
+      import("@ton/core"),
+      import("../../ton-contract/build/Attendance/Attendance_AttendanceBadge")
     ]);
 
     const client = new TonClient({ endpoint: TON_RPC_ENDPOINT });

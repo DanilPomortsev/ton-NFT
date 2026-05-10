@@ -1,388 +1,55 @@
-:root {
-  font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
-  color: #101828;
-  background: radial-gradient(circle at top, #d9f2ff, #f8fafc 40%);
-  line-height: 1.5;
-}
-
-* {
-  box-sizing: border-box;
-}
-
 body {
   margin: 0;
+  background: #0b1020;
+  color: #f4f7ff;
+  font-family: Arial, sans-serif;
 }
 
-.app-shell {
-  max-width: 920px;
+.container {
+  max-width: 720px;
   margin: 0 auto;
-  min-height: 100vh;
-  padding: 20px 16px 40px;
-}
-
-.header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.header nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.header a {
-  text-decoration: none;
-  color: #334155;
-  font-weight: 600;
-  padding: 6px 10px;
-  border-radius: 8px;
-}
-
-.header a.active {
-  color: #0f172a;
-  background: #dbeafe;
-}
-
-.content {
-  background: #ffffffd1;
-  border: 1px solid #dbe3ef;
-  border-radius: 16px;
-  padding: 20px;
-  backdrop-filter: blur(4px);
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.actions {
-  display: flex;
-  gap: 8px;
-}
-
-.btn {
-  border: none;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-
-.btn-primary {
-  color: #fff;
-  background: linear-gradient(135deg, #0284c7, #0369a1);
-}
-
-.btn-secondary {
-  color: #0f172a;
-  background: #e2e8f0;
-}
-
-.state {
-  margin: 16px 0;
-  padding: 14px;
-  border-radius: 12px;
-  background: #f8fafc;
-}
-
-.state-error {
-  background: #fee2e2;
-}
-
-.state-loading {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.spinner {
-  width: 18px;
-  height: 18px;
-  border: 3px solid #bfdbfe;
-  border-top-color: #0369a1;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.status-banner {
-  margin-top: 12px;
-  padding: 10px;
-  border-radius: 10px;
-  background: #eff6ff;
-}
-
-.wallet-list {
-  list-style: none;
-  margin: 16px 0 0;
-  padding: 0;
-  display: grid;
-  gap: 12px;
-}
-
-.wallet-card {
-  border: 1px solid #dbe3ef;
-  border-radius: 12px;
-  padding: 12px;
-  background: white;
-}
-
-.section-copy {
-  margin: 6px 0 0;
-  color: #475467;
-}
-
-.lottery-grid {
-  display: grid;
-  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
-  gap: 16px;
-  margin-top: 16px;
-}
-
-.lottery-form-card,
-.lottery-list-card {
-  border: 1px solid #dbe3ef;
-  border-radius: 16px;
-  background: white;
   padding: 16px;
 }
 
-.lottery-form-card h3,
-.lottery-list-card h3 {
-  margin-top: 0;
-  margin-bottom: 8px;
-}
-
-.form-hint,
-.list-meta,
-.form-note {
-  color: #475467;
-  font-size: 14px;
-}
-
-.form-note {
-  display: grid;
-  gap: 4px;
-  padding: 10px 12px;
-  background: #f8fafc;
-  border-radius: 10px;
+.card {
+  background: #151d35;
+  border: 1px solid #29365f;
+  border-radius: 12px;
+  padding: 12px;
   margin-bottom: 12px;
 }
 
-.form-field {
-  display: grid;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.form-field span {
-  font-size: 14px;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.form-field input,
-.form-field select,
-.form-field textarea {
+input {
   width: 100%;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font: inherit;
-  background: #fff;
+  box-sizing: border-box;
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #40528a;
 }
 
-.form-field textarea {
-  resize: vertical;
+button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 0;
+  cursor: pointer;
 }
 
-.lottery-list {
-  list-style: none;
-  margin: 12px 0 0;
-  padding: 0;
-  display: grid;
-  gap: 12px;
-}
-
-.lottery-card {
-  border: 1px solid #dbe3ef;
-  border-radius: 12px;
-  padding: 14px;
-  background: linear-gradient(180deg, #ffffff, #f8fbff);
-}
-
-.lottery-card-header,
-.list-card-header {
+.profile {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   gap: 12px;
-}
-
-.lottery-description {
-  margin: 10px 0;
-  color: #475467;
-}
-
-.lottery-meta {
-  font-size: 13px;
-  color: #667085;
-  margin-top: 4px;
-  word-break: break-all;
-}
-
-.lottery-stats {
-  display: grid;
-  gap: 6px;
-  font-size: 14px;
-}
-
-.pill {
-  display: inline-flex;
   align-items: center;
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 700;
 }
 
-.pill-owned {
-  color: #065f46;
-  background: #d1fae5;
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
 }
 
-.pill-open {
-  color: #1d4ed8;
-  background: #dbeafe;
-}
-
-.pill-ticket {
-  color: #5b21b6;
-  background: #ede9fe;
-}
-
-.pill-group {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 6px;
-}
-
-.lottery-card-actions {
-  margin-top: 12px;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.tickets-page {
-  display: grid;
-  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
-  gap: 16px;
-  margin-top: 16px;
-}
-
-.tickets-sidebar,
-.ticket-list-card {
-  border: 1px solid #dbe3ef;
-  border-radius: 16px;
-  background: white;
-  padding: 16px;
-}
-
-.ticket-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 12px;
-}
-
-.ticket-card {
-  border: 1px solid #dbe3ef;
-  border-radius: 12px;
-  padding: 14px;
-  background: linear-gradient(180deg, #ffffff, #f8fbff);
-}
-
-.ticket-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.debug-panel {
-  position: fixed;
-  right: 12px;
-  bottom: 12px;
-  z-index: 9999;
-  max-width: min(92vw, 760px);
-}
-
-.debug-toggle {
-  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.2);
-}
-
-.debug-body {
+.badge-image {
   margin-top: 8px;
-  max-height: 45vh;
-  overflow: auto;
-  border-radius: 12px;
-  border: 1px solid #cbd5e1;
-  background: rgba(2, 6, 23, 0.95);
-  color: #e2e8f0;
-  padding: 10px;
-  font-size: 12px;
-  line-height: 1.35;
-}
-
-.debug-line {
-  border-bottom: 1px solid rgba(148, 163, 184, 0.3);
-  padding: 6px 0;
-}
-
-.debug-line:last-child {
-  border-bottom: none;
-}
-
-.debug-meta {
-  font-weight: 600;
-  word-break: break-word;
-}
-
-.debug-line pre {
-  margin: 4px 0 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-  color: #cbd5e1;
-}
-
-.debug-error .debug-meta {
-  color: #fca5a5;
-}
-
-@media (max-width: 860px) {
-  .lottery-grid,
-  .tickets-page {
-    grid-template-columns: 1fr;
-  }
+  max-width: 220px;
+  border-radius: 8px;
+  border: 1px solid #40528a;
 }

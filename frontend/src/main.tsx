@@ -1,44 +1,36 @@
-import '@/polyfills';
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { TonConnectUIProvider } from "@tonconnect/ui-react";
+import { App } from "./App";
+import "./styles.css";
 
-import { App } from '@/app/App';
-import { QueryProvider } from '@/app/providers/QueryProvider';
-import { TelegramProvider } from '@/app/providers/TelegramProvider';
-import { TonConnectProvider } from '@/app/providers/TonConnectProvider';
-import { debugError, debugLog } from '@/shared/lib/debug';
-
-import './styles.css';
-
-debugLog('app', 'bootstrap start', {
-  href: typeof window !== 'undefined' ? window.location.href : '',
-  userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
-});
-
-if (typeof window !== 'undefined') {
-  window.addEventListener('error', (event) => {
-    debugError('window', 'error event', {
-      message: event.message,
-      filename: event.filename,
-      lineno: event.lineno,
-      colno: event.colno,
-      error: event.error,
-    });
-  });
-
-  window.addEventListener('unhandledrejection', (event) => {
-    debugError('window', 'unhandledrejection', event.reason);
-  });
+function resolveManifestUrl() {
+  const fromEnv = (import.meta.env.VITE_TONCONNECT_MANIFEST_URL || "").trim();
+  // Use env only when it is an explicit HTTPS URL and not placeholder.
+  if (fromEnv && fromEnv.startsWith("https://") && !fromEnv.includes("your-domain.com")) {
+    return fromEnv;
+  }
+  // Stable public manifest fallback that always works for TonConnect.
+  return "https://raw.githubusercontent.com/ton-org/blueprint/main/tonconnect/manifest.json";
 }
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+const manifestUrl = resolveManifestUrl();
+const twaReturnUrl =
+  (import.meta.env.VITE_TWA_RETURN_URL || "").trim() ||
+  ((window as any)?.Telegram?.WebApp ? window.location.href : "");
+
+const root = document.getElementById("root");
+if (!root) {
+  throw new Error("Root element #root not found");
+}
+
+ReactDOM.createRoot(root).render(
   <React.StrictMode>
-    <QueryProvider>
-      <TelegramProvider>
-        <TonConnectProvider>
-          <App />
-        </TonConnectProvider>
-      </TelegramProvider>
-    </QueryProvider>
-  </React.StrictMode>,
+    <TonConnectUIProvider
+      manifestUrl={manifestUrl}
+      actionsConfiguration={twaReturnUrl ? { twaReturnUrl } : undefined}
+    >
+      <App />
+    </TonConnectUIProvider>
+  </React.StrictMode>
 );
