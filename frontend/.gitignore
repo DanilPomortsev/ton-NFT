@@ -1,0 +1,10 @@
+node_modules
+.DS_Store
+dist
+coverage
+public/tonconnect-manifest.json
+src/**/*.js
+src/**/*.js.map
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
