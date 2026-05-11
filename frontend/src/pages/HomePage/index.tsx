@@ -129,22 +129,53 @@ export const HomePage = () => {
 
     setLog('Reading your hashCodes from contract getter...');
 
-    const [{ TonClient }, { Address }, contractAddress] = await Promise.all([
+    const [{ TonClient }, { Address, Dictionary, TupleBuilder }, contractAddress] = await Promise.all([
       import('@ton/ton'),
       import('@ton/core'),
       parseAddressOrThrow(CONTRACT_ADDRESS, 'VITE_CONTRACT_ADDRESS'),
     ]);
 
-    const [{ AttendanceBadge }] = await Promise.all([
-          import('./Attendance_AttendanceBadge'),
-        ]);
-
     const client = new TonClient({ endpoint: TON_RPC_ENDPOINT });
-    const contract = client.open(AttendanceBadge.fromAddress(contractAddress));
-    const dict = await contract.getGetAttendeesByStudent({
-      $$type: 'GetByStudent',
-      student: Address.parse(address),
-    });
+    const studentAddress = Address.parse(address);
+    const args = new TupleBuilder();
+    args.writeAddress(studentAddress);
+
+    const getterResult = await client.runMethod(contractAddress, 'getAttendeesByStudent', args.build());
+
+    function readDictCell(reader: any): any {
+      if (!reader || typeof reader.remaining !== 'number' || reader.remaining <= 0) {
+        return null;
+      }
+
+      const top = reader.peek?.();
+      if (!top || !top.type) {
+        throw new Error('Unexpected getter stack format');
+      }
+
+      if (top.type === 'null') {
+        reader.readCellOpt();
+        return null;
+      }
+
+      if (top.type === 'cell') {
+        return reader.readCell();
+      }
+
+      if (top.type === 'tuple') {
+        const nested = reader.readTuple();
+        return readDictCell(nested);
+      }
+
+      if (top.type === 'slice') {
+        const cell = reader.readCell();
+        return cell;
+      }
+
+      throw new Error(`Unsupported getter result type: ${top.type}`);
+    }
+
+    const dictCell = readDictCell(getterResult.stack);
+    const dict = Dictionary.loadDirect(Dictionary.Keys.BigUint(256), Dictionary.Values.BigUint(256), dictCell);
     const hashCodes = [...dict.values()].map((v) => `0x${v.toString(16).padStart(64, '0')}`);
 
     if (hashCodes.length === 0) {
