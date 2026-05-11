@@ -116,7 +116,7 @@ export const HomePage = () => {
     const [{ TonClient }, { Address }, { AttendanceBadge }] = await Promise.all([
       import('@ton/ton'),
       import('@ton/core'),
-      import('./build/Attendance//Attendance_AttendanceBadge'),
+      import('./Attendance_AttendanceBadge'),
     ]);
 
     const client = new TonClient({ endpoint: TON_RPC_ENDPOINT });
