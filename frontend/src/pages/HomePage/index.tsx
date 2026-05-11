@@ -31,7 +31,7 @@ declare global {
 }
 
 const API_BASE = import.meta.env.VITE_API_BASE || '';
-const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || '').trim();
+const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || 'kQATdH_GVNjtgZ9npdgBV2RupyDLAgQ2O5rxHzhfN4Rm6gN0').trim();
 const TON_RPC_ENDPOINT = import.meta.env.VITE_TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC';
 const CLAIM_BADGE_OPCODE = 1990728166;
 
