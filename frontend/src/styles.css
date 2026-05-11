@@ -13,6 +13,22 @@ body {
   margin: 0;
 }
 
+#root {
+  min-height: 100vh;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+section {
+  display: grid;
+  gap: 14px;
+}
+
+h2 {
+  margin: 0 0 4px;
+}
+
 .app-shell {
   max-width: 920px;
   margin: 0 auto;
@@ -54,6 +70,78 @@ body {
   border-radius: 16px;
   padding: 20px;
   backdrop-filter: blur(4px);
+}
+
+.card {
+  border: 1px solid #dbe3ef;
+  border-radius: 16px;
+  background: #ffffffd1;
+  padding: 16px;
+}
+
+.card h3 {
+  margin: 0 0 10px;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #dbe3ef;
+}
+
+input,
+button {
+  font: inherit;
+}
+
+input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  background: #fff;
+}
+
+button {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #fff;
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(1.03);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.badge-image {
+  display: block;
+  margin-top: 8px;
+  max-width: 100%;
+  border-radius: 12px;
+  border: 1px solid #dbe3ef;
+}
+
+pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .section-header {

@@ -2,10 +2,9 @@ import '@/polyfills';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-import { App } from '@/app/App';
-import { QueryProvider } from '@/app/providers/QueryProvider';
 import { TelegramProvider } from '@/app/providers/TelegramProvider';
 import { TonConnectProvider } from '@/app/providers/TonConnectProvider';
+import { HomePage } from '@/pages/HomePage';
 import { debugError, debugLog } from '@/shared/lib/debug';
 
 import './styles.css';
@@ -33,12 +32,10 @@ if (typeof window !== 'undefined') {
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <QueryProvider>
-      <TelegramProvider>
-        <TonConnectProvider>
-          <App />
-        </TonConnectProvider>
-      </TelegramProvider>
-    </QueryProvider>
+    <TelegramProvider>
+      <TonConnectProvider>
+        <HomePage />
+      </TonConnectProvider>
+    </TelegramProvider>
   </React.StrictMode>,
 );
