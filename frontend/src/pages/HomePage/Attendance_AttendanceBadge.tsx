@@ -1167,7 +1167,14 @@ export class AttendanceBadge implements Contract {
         const builder = new TupleBuilder();
         builder.writeTuple(storeTupleGetByCode(msg));
         const source = (await provider.get('getAttendeesByCode', builder.build())).stack;
-        const result = Dictionary.loadDirect(Dictionary.Keys.BigUint(256), Dictionary.Values.BigUint(256), source.readCellOpt());
+        let dictCell: Cell | null = null;
+        try {
+            dictCell = source.readCellOpt();
+        } catch {
+            const tuple = source.readTuple();
+            dictCell = tuple.readCellOpt();
+        }
+        const result = Dictionary.loadDirect(Dictionary.Keys.BigUint(256), Dictionary.Values.Address(), dictCell);
         return result;
     }
     
@@ -1175,7 +1182,14 @@ export class AttendanceBadge implements Contract {
         const builder = new TupleBuilder();
         builder.writeTuple(storeTupleGetByStudent(msg));
         const source = (await provider.get('getAttendeesByStudent', builder.build())).stack;
-        const result = Dictionary.loadDirect(Dictionary.Keys.BigUint(256), Dictionary.Values.Address(), source.readCellOpt());
+        let dictCell: Cell | null = null;
+        try {
+            dictCell = source.readCellOpt();
+        } catch {
+            const tuple = source.readTuple();
+            dictCell = tuple.readCellOpt();
+        }
+        const result = Dictionary.loadDirect(Dictionary.Keys.BigUint(256), Dictionary.Values.BigUint(256), dictCell);
         return result;
     }
     
