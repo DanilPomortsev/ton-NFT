@@ -113,11 +113,14 @@ export const HomePage = () => {
 
     setLog('Reading your hashCodes from contract getter...');
 
-    const [{ TonClient }, { Address }, { AttendanceBadge }] = await Promise.all([
+    const [{ TonClient }, { Address }] = await Promise.all([
       import('@ton/ton'),
       import('@ton/core'),
-      import('../../../../ton-contract/build/Attendance/Attendance_AttendanceBadge'),
     ]);
+
+    const [{ AttendanceBadge }] = await Promise.all([
+          import('../../../../ton-contract/build/Attendance/Attendance_AttendanceBadge'),
+        ]);
 
     const client = new TonClient({ endpoint: TON_RPC_ENDPOINT });
     const contract = client.open(AttendanceBadge.fromAddress(Address.parse(CONTRACT_ADDRESS)));
