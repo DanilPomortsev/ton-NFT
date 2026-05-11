@@ -140,7 +140,7 @@ export const HomePage = () => {
     const args = new TupleBuilder();
     args.writeAddress(studentAddress);
 
-    let { stack } = await client.callGetMethod(contractAddress, 'getAttendeesByStudent', args.build());
+    const { stack } = await client.callGetMethod(contractAddress, 'getAttendeesByStudent', args.build());
 
     function readDictCell(reader: any): any {
       if (!reader || typeof reader.remaining !== 'number' || reader.remaining <= 0) {
@@ -174,7 +174,7 @@ export const HomePage = () => {
       throw new Error(`Unsupported getter result type: ${top.type}`);
     }
 
-    const dictCell = readDictCell(getterResult.stack);
+    const dictCell = readDictCell(stack);
     const dict = Dictionary.loadDirect(Dictionary.Keys.BigUint(256), Dictionary.Values.BigUint(256), dictCell);
     const hashCodes = [...dict.values()].map((v) => `0x${v.toString(16).padStart(64, '0')}`);
 
