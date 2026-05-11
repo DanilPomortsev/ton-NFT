@@ -1,26 +1,47 @@
 {
-  "name": "attendance-ton-tma",
-  "version": "1.0.0",
+  "name": "ton-lottery-miniapp",
+  "version": "0.1.0",
   "private": true,
-  "description": "Telegram Mini App + TON attendance badges",
+  "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "npm run typecheck && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext ts,tsx --max-warnings 0",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "generate:api-types": "openapi-generator generate -i ../backend/api/swagger.json -g typescript-fetch -o ./src/shared/api/generated"
   },
   "dependencies": {
-    "@ton/core": "^0.62.0",
-    "@ton/ton": "^15.4.0",
+    "@tanstack/react-query": "^5.66.9",
+    "@ton/core": "^0.60.0",
     "@tonconnect/ui-react": "^2.0.9",
+    "buffer": "^6.0.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "ton-core": "^0.53.0"
+    "react-hook-form": "^7.54.2",
+    "react-router-dom": "^6.30.1",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@types/react": "^18.3.11",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.1",
-    "typescript": "^5.6.2",
-    "vite": "^5.4.8"
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22.13.10",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@typescript-eslint/eslint-plugin": "^8.24.0",
+    "@typescript-eslint/parser": "^8.24.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.21.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "jsdom": "^28.1.0",
+    "prettier": "^3.5.2",
+    "typescript": "^5.7.3",
+    "vite": "^6.2.0",
+    "vitest": "^3.0.8"
   }
 }
