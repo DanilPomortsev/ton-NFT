@@ -611,7 +611,6 @@ export function dictValueParserBasechainAddress(): DictionaryValue<BasechainAddr
 
 export type AttendanceRecord = {
     $$type: 'AttendanceRecord';
-    codeHash: bigint;
     badge: bigint;
     student: Address;
     timestamp: bigint;
@@ -620,7 +619,6 @@ export type AttendanceRecord = {
 export function storeAttendanceRecord(src: AttendanceRecord) {
     return (builder: Builder) => {
         const b_0 = builder;
-        b_0.storeUint(src.codeHash, 256);
         b_0.storeUint(src.badge, 256);
         b_0.storeAddress(src.student);
         b_0.storeUint(src.timestamp, 32);
@@ -629,32 +627,28 @@ export function storeAttendanceRecord(src: AttendanceRecord) {
 
 export function loadAttendanceRecord(slice: Slice) {
     const sc_0 = slice;
-    const _codeHash = sc_0.loadUintBig(256);
     const _badge = sc_0.loadUintBig(256);
     const _student = sc_0.loadAddress();
     const _timestamp = sc_0.loadUintBig(32);
-    return { $$type: 'AttendanceRecord' as const, codeHash: _codeHash, badge: _badge, student: _student, timestamp: _timestamp };
+    return { $$type: 'AttendanceRecord' as const, badge: _badge, student: _student, timestamp: _timestamp };
 }
 
 export function loadTupleAttendanceRecord(source: TupleReader) {
-    const _codeHash = source.readBigNumber();
     const _badge = source.readBigNumber();
     const _student = source.readAddress();
     const _timestamp = source.readBigNumber();
-    return { $$type: 'AttendanceRecord' as const, codeHash: _codeHash, badge: _badge, student: _student, timestamp: _timestamp };
+    return { $$type: 'AttendanceRecord' as const, badge: _badge, student: _student, timestamp: _timestamp };
 }
 
 export function loadGetterTupleAttendanceRecord(source: TupleReader) {
-    const _codeHash = source.readBigNumber();
     const _badge = source.readBigNumber();
     const _student = source.readAddress();
     const _timestamp = source.readBigNumber();
-    return { $$type: 'AttendanceRecord' as const, codeHash: _codeHash, badge: _badge, student: _student, timestamp: _timestamp };
+    return { $$type: 'AttendanceRecord' as const, badge: _badge, student: _student, timestamp: _timestamp };
 }
 
 export function storeTupleAttendanceRecord(source: AttendanceRecord) {
     const builder = new TupleBuilder();
-    builder.writeNumber(source.codeHash);
     builder.writeNumber(source.badge);
     builder.writeAddress(source.student);
     builder.writeNumber(source.timestamp);
