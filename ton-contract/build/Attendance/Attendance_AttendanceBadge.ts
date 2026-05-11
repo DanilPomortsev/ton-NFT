@@ -19,7 +19,7 @@ import {
     ABIReceiver,
     TupleBuilder,
     DictionaryValue
-} from '@ton/core';
+} from 'ton-core';
 
 export type DataSize = {
     $$type: 'DataSize';
