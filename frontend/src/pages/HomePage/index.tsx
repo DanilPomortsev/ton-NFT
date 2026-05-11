@@ -31,8 +31,7 @@ declare global {
 }
 
 const API_BASE = import.meta.env.VITE_API_BASE || '';
-const CONTRACT_ADDRESS =
-  import.meta.env.VITE_CONTRACT_ADDRESS || 'EQkQATdH_GVNjtgZ9npdgBV2RupyDLAgQ2O5rxHzhfN4Rm6gN0';
+const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || '').trim();
 const TON_RPC_ENDPOINT = import.meta.env.VITE_TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC';
 const CLAIM_BADGE_OPCODE = 1990728166;
 
@@ -77,12 +76,29 @@ export const HomePage = () => {
     return BigInt(`0x${normalized}`);
   }
 
+  async function parseAddressOrThrow(value: string, label: string) {
+    const normalized = value.trim();
+    if (!normalized) {
+      throw new Error(`${label} is not configured`);
+    }
+
+    const { Address } = await import('@ton/core');
+    try {
+      return Address.parse(normalized);
+    } catch {
+      throw new Error(`${label} is invalid: ${normalized}`);
+    }
+  }
+
   async function claimByHashCode() {
     if (!address) {
       throw new Error('Connect wallet first');
     }
 
-    const { beginCell } = await import('@ton/core');
+    const [{ beginCell }, contractAddress] = await Promise.all([
+      import('@ton/core'),
+      parseAddressOrThrow(CONTRACT_ADDRESS, 'VITE_CONTRACT_ADDRESS'),
+    ]);
     const codeHash = parseHashCodeToBigInt(hashCodeInput);
     const payloadBoc = beginCell()
       .storeUint(CLAIM_BADGE_OPCODE, 32)
@@ -97,7 +113,7 @@ export const HomePage = () => {
       validUntil: Math.floor(Date.now() / 1000) + 300,
       messages: [
         {
-          address: CONTRACT_ADDRESS,
+          address: contractAddress.toString(),
           amount: '30000000',
           payload: payloadBoc,
         },
@@ -113,9 +129,10 @@ export const HomePage = () => {
 
     setLog('Reading your hashCodes from contract getter...');
 
-    const [{ TonClient }, { Address }] = await Promise.all([
+    const [{ TonClient }, { Address }, contractAddress] = await Promise.all([
       import('@ton/ton'),
       import('@ton/core'),
+      parseAddressOrThrow(CONTRACT_ADDRESS, 'VITE_CONTRACT_ADDRESS'),
     ]);
 
     const [{ AttendanceBadge }] = await Promise.all([
@@ -123,7 +140,7 @@ export const HomePage = () => {
         ]);
 
     const client = new TonClient({ endpoint: TON_RPC_ENDPOINT });
-    const contract = client.open(AttendanceBadge.fromAddress(Address.parse(CONTRACT_ADDRESS)));
+    const contract = client.open(AttendanceBadge.fromAddress(contractAddress));
     const dict = await contract.getGetAttendeesByStudent({
       $$type: 'GetByStudent',
       student: Address.parse(address),
