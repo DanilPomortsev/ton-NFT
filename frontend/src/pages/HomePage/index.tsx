@@ -140,7 +140,7 @@ export const HomePage = () => {
     const args = new TupleBuilder();
     args.writeAddress(studentAddress);
 
-    const getterResult = await client.runMethod(contractAddress, 'getAttendeesByStudent', args.build());
+    let { stack } = await client.callGetMethod(contractAddress, 'getAttendeesByStudent', args.build());
 
     function readDictCell(reader: any): any {
       if (!reader || typeof reader.remaining !== 'number' || reader.remaining <= 0) {
