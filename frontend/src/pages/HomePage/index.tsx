@@ -119,7 +119,7 @@ export const HomePage = () => {
     ]);
 
     const [{ AttendanceBadge }] = await Promise.all([
-          import('../../../../ton-contract/build/Attendance/Attendance_AttendanceBadge'),
+          import('./Attendance_AttendanceBadge'),
         ]);
 
     const client = new TonClient({ endpoint: TON_RPC_ENDPOINT });
