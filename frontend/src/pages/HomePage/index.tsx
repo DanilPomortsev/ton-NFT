@@ -129,7 +129,7 @@ export const HomePage = () => {
 
     setLog('Reading your hashCodes from contract getter...');
 
-    const [{ TonClient }, { Address, Dictionary, TupleBuilder, beginCell }, contractAddress] = await Promise.all([
+    const [{ TonClient }, { Address, Dictionary, TupleBuilder }, contractAddress] = await Promise.all([
       import('@ton/ton'),
       import('@ton/core'),
       parseAddressOrThrow(CONTRACT_ADDRESS, 'VITE_CONTRACT_ADDRESS'),
@@ -138,19 +138,9 @@ export const HomePage = () => {
     const client = new TonClient({ endpoint: TON_RPC_ENDPOINT });
     const studentAddress = Address.parse(address);
     const args = new TupleBuilder();
-    args.writeCell(beginCell().storeUint(2524839793, 32).storeAddress(studentAddress).endCell());
+    args.writeAddress(studentAddress);
 
-    let stack: any;
-    try {
-      const result = await client.runMethod(contractAddress, 'getAttendeesByStudent', args.build());
-      stack = result.stack;
-    } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
-      if (message.includes('exit_code: 11')) {
-        throw new Error('Getter rejected args (exit 11). Contract expects a different getter ABI on-chain.');
-      }
-      throw e;
-    }
+    const { stack } = await client.callGetMethod(contractAddress, 'getAttendeesByStudent', args.build());
 
     function readDictCell(reader: any): any {
       if (!reader || typeof reader.remaining !== 'number' || reader.remaining <= 0) {
