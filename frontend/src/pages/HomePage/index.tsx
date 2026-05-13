@@ -34,11 +34,14 @@ declare global {
   }
 }
 
-const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || '').trim();
-const TON_RPC_ENDPOINT = import.meta.env.VITE_TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC';
+/** Testnet BadgeBoard; при необходимости переопредели через `VITE_CONTRACT_ADDRESS`. */
+const DEFAULT_BADGEBOARD_ADDRESS = 'kQCcYs0QZhNgP5dsbbUbmTdkXhk_rjCjljcguuL9qcchdtaE';
 
-const MISSING_CONTRACT_MSG =
-  'Адрес контракта не попал в сборку. Локально: `frontend/.env` или `.env` в корне репозитория с VITE_CONTRACT_ADDRESS=... (допустимо CONTRACT_ADDRESS). На Vercel: Project → Settings → Environment Variables → VITE_CONTRACT_ADDRESS для Production, затем Redeploy.';
+const CONTRACT_ADDRESS = (
+  (import.meta.env.VITE_CONTRACT_ADDRESS && String(import.meta.env.VITE_CONTRACT_ADDRESS).trim()) ||
+  DEFAULT_BADGEBOARD_ADDRESS
+).trim();
+const TON_RPC_ENDPOINT = import.meta.env.VITE_TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC';
 
 export const HomePage = () => {
   const tonAddress = useTonAddress();
@@ -107,11 +110,7 @@ export const HomePage = () => {
     if (!address) {
       throw new Error('Connect wallet first');
     }
-    if (!CONTRACT_ADDRESS) {
-      throw new Error(MISSING_CONTRACT_MSG);
-    }
-
-    const contractAddress = await parseAddressOrThrow(CONTRACT_ADDRESS, 'VITE_CONTRACT_ADDRESS');
+    const contractAddress = await parseAddressOrThrow(CONTRACT_ADDRESS, 'BadgeBoard contract');
     const hashCode = parseHashCodeInput(hashCodeInput);
     const body = buildClaimByCodePayload(hashCode);
     const payloadBoc = body.toBoc({ idx: false }).toString('base64');
@@ -134,16 +133,12 @@ export const HomePage = () => {
     if (!address) {
       throw new Error('Connect wallet first');
     }
-    if (!CONTRACT_ADDRESS) {
-      throw new Error(MISSING_CONTRACT_MSG);
-    }
-
     setLog('Reading badge ids from contract (getter badges)…');
 
     const [{ TonClient }, { Address, Dictionary, TupleBuilder }, contractAddress] = await Promise.all([
       import('@ton/ton'),
       import('@ton/core'),
-      parseAddressOrThrow(CONTRACT_ADDRESS, 'VITE_CONTRACT_ADDRESS'),
+      parseAddressOrThrow(CONTRACT_ADDRESS, 'BadgeBoard contract'),
     ]);
 
     const client = new TonClient({ endpoint: TON_RPC_ENDPOINT });
@@ -196,7 +191,7 @@ export const HomePage = () => {
         <TonConnectButton />
         <p>Wallet: {address || 'not connected'}</p>
         <p>Connection: {wallet ? 'connected' : 'not connected'}</p>
-        <p>Contract: {CONTRACT_ADDRESS || '(нет в сборке — см. VITE_CONTRACT_ADDRESS / Vercel Env)'}</p>
+        <p>Contract: {CONTRACT_ADDRESS}</p>
       </div>
 
       <div className="card">
