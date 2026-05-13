@@ -1,14 +1,9 @@
 {
-  "$schema": "https://raw.githubusercontent.com/tact-lang/tact/main/src/config/configSchema.json",
   "projects": [
     {
-      "name": "Attendance",
-      "path": "contracts/attendance.tact",
-      "output": "build\\Attendance",
-      "options": {
-        "debug": false,
-        "external": false
-      },
+      "name": "BadgeBoard",
+      "path": "./contracts/BadgeBoard.tact",
+      "output": "./build/BadgeBoard",
       "mode": "full"
     }
   ]

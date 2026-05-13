@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { TonConnectButton, useTonAddress, useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
 
+import { buildClaimByCodePayload } from '@/lib/badgeBoard';
+
 type TgUser = {
   id?: number;
   first_name?: string;
@@ -10,8 +12,10 @@ type TgUser = {
 };
 
 type StudentBadgeView = {
-  hashCode: string;
-  badge: string;
+  /** On-chain badge id (из getter `badges`). */
+  badgeId: string;
+  hashCode?: string;
+  badge?: string;
   imageUrl?: string | null;
   imageBase64?: string | null;
 };
@@ -30,10 +34,8 @@ declare global {
   }
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE || '';
-const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || 'kQATdH_GVNjtgZ9npdgBV2RupyDLAgQ2O5rxHzhfN4Rm6gN0').trim();
+const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || '').trim();
 const TON_RPC_ENDPOINT = import.meta.env.VITE_TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC';
-const CLAIM_BADGE_OPCODE = 1990728166;
 
 export const HomePage = () => {
   const tonAddress = useTonAddress();
@@ -42,7 +44,6 @@ export const HomePage = () => {
   const [connectedAddress, setConnectedAddress] = useState('');
   const [hashCodeInput, setHashCodeInput] = useState('');
   const [studentBadges, setStudentBadges] = useState<StudentBadgeView[]>([]);
-  const [notFoundHashes, setNotFoundHashes] = useState<string[]>([]);
   const [log, setLog] = useState('Ready');
   const address = connectedAddress || wallet?.account?.address || tonAddress;
 
@@ -68,12 +69,21 @@ export const HomePage = () => {
     return () => unsubscribe();
   }, [tonConnectUI]);
 
-  function parseHashCodeToBigInt(raw: string): bigint {
-    const normalized = raw.trim().toLowerCase().replace(/^0x/, '');
-    if (!/^[0-9a-f]+$/.test(normalized)) {
-      throw new Error('hashCode must be hex string');
+  function parseHashCodeInput(raw: string): bigint {
+    const t = raw.trim();
+    if (!t) {
+      throw new Error('hashCode is required');
     }
-    return BigInt(`0x${normalized}`);
+    if (/^0x[0-9a-f]+$/i.test(t)) {
+      return BigInt(t);
+    }
+    if (/^[0-9]+$/.test(t)) {
+      return BigInt(t);
+    }
+    if (/^[0-9a-f]+$/i.test(t)) {
+      return BigInt(`0x${t}`);
+    }
+    throw new Error('hashCode: use decimal (e.g. 424242) or hex with 0x prefix');
   }
 
   async function parseAddressOrThrow(value: string, label: string) {
@@ -94,40 +104,38 @@ export const HomePage = () => {
     if (!address) {
       throw new Error('Connect wallet first');
     }
+    if (!CONTRACT_ADDRESS) {
+      throw new Error('Set VITE_CONTRACT_ADDRESS in .env');
+    }
 
-    const [{ beginCell }, contractAddress] = await Promise.all([
-      import('@ton/core'),
-      parseAddressOrThrow(CONTRACT_ADDRESS, 'VITE_CONTRACT_ADDRESS'),
-    ]);
-    const codeHash = parseHashCodeToBigInt(hashCodeInput);
-    const payloadBoc = beginCell()
-      .storeUint(CLAIM_BADGE_OPCODE, 32)
-      .storeUint(0, 64)
-      .storeUint(codeHash, 256)
-      .endCell()
-      .toBoc()
-      .toString('base64');
+    const contractAddress = await parseAddressOrThrow(CONTRACT_ADDRESS, 'VITE_CONTRACT_ADDRESS');
+    const hashCode = parseHashCodeInput(hashCodeInput);
+    const body = buildClaimByCodePayload(hashCode);
+    const payloadBoc = body.toBoc({ idx: false }).toString('base64');
 
-    setLog('Sending transaction to ClaimBadge...');
+    setLog('Sending ClaimByCode…');
     await tonConnectUI.sendTransaction({
       validUntil: Math.floor(Date.now() / 1000) + 300,
       messages: [
         {
-          address: contractAddress.toString(),
-          amount: '30000000',
+          address: contractAddress.toString({ urlSafe: true, bounceable: true, testOnly: true }),
+          amount: '60000000',
           payload: payloadBoc,
         },
       ],
     });
-    setLog('ClaimBadge transaction submitted');
+    setLog('ClaimByCode transaction submitted');
   }
 
   async function loadMyBadges() {
     if (!address) {
       throw new Error('Connect wallet first');
     }
+    if (!CONTRACT_ADDRESS) {
+      throw new Error('Set VITE_CONTRACT_ADDRESS in .env');
+    }
 
-    setLog('Reading your hashCodes from contract getter...');
+    setLog('Reading badge ids from contract (getter badges)…');
 
     const [{ TonClient }, { Address, Dictionary, TupleBuilder }, contractAddress] = await Promise.all([
       import('@ton/ton'),
@@ -140,64 +148,27 @@ export const HomePage = () => {
     const args = new TupleBuilder();
     args.writeAddress(studentAddress);
 
-    const { stack } = await client.callGetMethod(contractAddress, 'getAttendeesByStudent', args.build());
+    const { stack } = await client.callGetMethod(contractAddress, 'badges', args.build());
+    const dictCell = stack.readCellOpt();
+    const dict = dictCell
+      ? Dictionary.loadDirect(Dictionary.Keys.BigInt(257), Dictionary.Values.Bool(), dictCell.beginParse())
+      : Dictionary.empty(Dictionary.Keys.BigInt(257), Dictionary.Values.Bool());
 
-    function readDictCell(reader: any): any {
-      if (!reader || typeof reader.remaining !== 'number' || reader.remaining <= 0) {
-        return null;
-      }
+    const badgeIds = [...dict.keys()].filter((k) => dict.get(k)).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 
-      const top = reader.peek?.();
-      if (!top || !top.type) {
-        throw new Error('Unexpected getter stack format');
-      }
-
-      if (top.type === 'null') {
-        reader.readCellOpt();
-        return null;
-      }
-
-      if (top.type === 'cell') {
-        return reader.readCell();
-      }
-
-      if (top.type === 'tuple') {
-        const nested = reader.readTuple();
-        return readDictCell(nested);
-      }
-
-      if (top.type === 'slice') {
-        const cell = reader.readCell();
-        return cell;
-      }
-
-      throw new Error(`Unsupported getter result type: ${top.type}`);
-    }
-
-    const dictCell = readDictCell(stack);
-    const dict = Dictionary.loadDirect(Dictionary.Keys.BigUint(256), Dictionary.Values.BigUint(256), dictCell);
-    const hashCodes = [...dict.values()].map((v) => `0x${v.toString(16).padStart(64, '0')}`);
-
-    if (hashCodes.length === 0) {
+    if (badgeIds.length === 0) {
       setStudentBadges([]);
-      setNotFoundHashes([]);
-      setLog('No badges claimed yet');
+      setLog('No badges on-chain yet for this wallet');
       return;
     }
 
-    setLog('Loading badge images from backend...');
-    const res = await fetch(`${API_BASE}/api/student/badges`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ hashCodes }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Failed to load badges from backend');
-    }
-    setStudentBadges((data.badges || []) as StudentBadgeView[]);
-    setNotFoundHashes((data.notFound || []) as string[]);
-    setLog(`Loaded ${data.badges?.length || 0} badge images`);
+    setStudentBadges(
+      badgeIds.map((id) => ({
+        badgeId: id.toString(),
+        badge: id.toString(),
+      })),
+    );
+    setLog(`Loaded ${badgeIds.length} badge id(s) from chain (getter badges)`);
   }
 
   return (
@@ -222,30 +193,32 @@ export const HomePage = () => {
         <TonConnectButton />
         <p>Wallet: {address || 'not connected'}</p>
         <p>Connection: {wallet ? 'connected' : 'not connected'}</p>
+        <p>Contract: {CONTRACT_ADDRESS || '(set VITE_CONTRACT_ADDRESS)'}</p>
       </div>
 
       <div className="card">
-        <h3>Claim by hashCode</h3>
+        <h3>Claim by code (BadgeBoard)</h3>
+        <p className="hint">Введи тот же hashCode, который преподаватель записал в контракт (число или 0x…).</p>
         <input
           value={hashCodeInput}
           onChange={(e) => setHashCodeInput(e.target.value)}
-          placeholder="hashCode from teacher, hex (0x...)"
+          placeholder="hashCode (decimal or 0x hex)"
         />
-        <button onClick={() => claimByHashCode().catch((e) => setLog(e.message))}>Mint/Claim badge</button>
+        <button onClick={() => claimByHashCode().catch((e) => setLog(String(e?.message || e)))}>Claim badge</button>
       </div>
 
       <div className="card">
         <h3>My badges</h3>
-        <button onClick={() => loadMyBadges().catch((e) => setLog(e.message))}>Load all my badges</button>
+        <button onClick={() => loadMyBadges().catch((e) => setLog(String(e?.message || e)))}>Load from chain</button>
         {studentBadges.map((b) => (
-          <div key={b.hashCode} style={{ borderTop: '1px solid #2c3f72', marginTop: 10, paddingTop: 10 }}>
-            <div>hashCode: {b.hashCode}</div>
-            <div>badge: {b.badge}</div>
-            {b.imageUrl ? <img src={b.imageUrl} alt={b.badge} className="badge-image" /> : null}
-            {b.imageBase64 ? <img src={b.imageBase64} alt={b.badge} className="badge-image" /> : null}
+          <div key={b.badgeId} style={{ borderTop: '1px solid #2c3f72', marginTop: 10, paddingTop: 10 }}>
+            <div>badgeId: {b.badgeId}</div>
+            {b.hashCode ? <div>hashCode: {b.hashCode}</div> : null}
+            {b.badge ? <div>badge: {b.badge}</div> : null}
+            {b.imageUrl ? <img src={b.imageUrl} alt={b.badgeId} className="badge-image" /> : null}
+            {b.imageBase64 ? <img src={b.imageBase64} alt={b.badgeId} className="badge-image" /> : null}
           </div>
         ))}
-        {notFoundHashes.length > 0 ? <p>Images not found in backend for: {notFoundHashes.join(', ')}</p> : null}
       </div>
 
       <div className="card">
