@@ -37,6 +37,9 @@ declare global {
 const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || '').trim();
 const TON_RPC_ENDPOINT = import.meta.env.VITE_TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC';
 
+const MISSING_CONTRACT_MSG =
+  'Адрес контракта не попал в сборку. Локально: `frontend/.env` или `.env` в корне репозитория с VITE_CONTRACT_ADDRESS=... (допустимо CONTRACT_ADDRESS). На Vercel: Project → Settings → Environment Variables → VITE_CONTRACT_ADDRESS для Production, затем Redeploy.';
+
 export const HomePage = () => {
   const tonAddress = useTonAddress();
   const wallet = useTonWallet();
@@ -105,7 +108,7 @@ export const HomePage = () => {
       throw new Error('Connect wallet first');
     }
     if (!CONTRACT_ADDRESS) {
-      throw new Error('Set VITE_CONTRACT_ADDRESS in .env');
+      throw new Error(MISSING_CONTRACT_MSG);
     }
 
     const contractAddress = await parseAddressOrThrow(CONTRACT_ADDRESS, 'VITE_CONTRACT_ADDRESS');
@@ -132,7 +135,7 @@ export const HomePage = () => {
       throw new Error('Connect wallet first');
     }
     if (!CONTRACT_ADDRESS) {
-      throw new Error('Set VITE_CONTRACT_ADDRESS in .env');
+      throw new Error(MISSING_CONTRACT_MSG);
     }
 
     setLog('Reading badge ids from contract (getter badges)…');
@@ -193,7 +196,7 @@ export const HomePage = () => {
         <TonConnectButton />
         <p>Wallet: {address || 'not connected'}</p>
         <p>Connection: {wallet ? 'connected' : 'not connected'}</p>
-        <p>Contract: {CONTRACT_ADDRESS || '(set VITE_CONTRACT_ADDRESS)'}</p>
+        <p>Contract: {CONTRACT_ADDRESS || '(нет в сборке — см. VITE_CONTRACT_ADDRESS / Vercel Env)'}</p>
       </div>
 
       <div className="card">
