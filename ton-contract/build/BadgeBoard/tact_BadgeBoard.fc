@@ -1,0 +1,557 @@
+#pragma version =0.4.6;
+#pragma allow-post-modification;
+#pragma compute-asm-ltr;
+
+;; tact_BadgeBoard.headers.fc
+;;
+;; Header files for BadgeBoard
+;; NOTE: declarations are sorted for optimal order
+;;
+
+;; __tact_not_null
+forall X -> X __tact_not_null(X x) impure inline;
+
+;; __tact_context_get
+(int, slice, int, slice) __tact_context_get() inline;
+
+;; __tact_context_get_sender
+slice __tact_context_get_sender() inline;
+
+;; __tact_dict_set_slice_int
+(cell, ()) __tact_dict_set_slice_int(cell d, int kl, slice k, int v, int vl) inline;
+
+;; __tact_dict_get_slice_cell
+cell __tact_dict_get_slice_cell(cell d, int kl, slice k) inline;
+
+;; __tact_dict_set_slice_cell
+(cell, ()) __tact_dict_set_slice_cell(cell d, int kl, slice k, cell v) inline;
+
+;; __tact_dict_get_int_int
+int __tact_dict_get_int_int(cell d, int kl, int k, int vl) inline;
+
+;; __tact_dict_set_int_int
+(cell, ()) __tact_dict_set_int_int(cell d, int kl, int k, int v, int vl) inline;
+
+;; $DeployOk$_store
+builder $DeployOk$_store(builder build_0, (int) v) inline;
+
+;; $DeployOk$_store_cell
+cell $DeployOk$_store_cell((int) v, builder b) inline;
+
+;; $StudentBadgeSet$_store
+builder $StudentBadgeSet$_store(builder build_0, (cell) v) inline;
+
+;; $StudentBadgeSet$_store_cell
+cell $StudentBadgeSet$_store_cell((cell) v, builder b) inline;
+
+;; $StudentBadgeSet$_load
+(slice, ((cell))) $StudentBadgeSet$_load(slice sc_0) inline;
+
+;; $StudentBadgeSet$_as_optional
+tuple $StudentBadgeSet$_as_optional((cell) v) inline;
+
+;; $StudentBadgeSet$_load_opt
+tuple $StudentBadgeSet$_load_opt(cell cl) inline;
+
+;; $BadgeBoard$_store
+builder $BadgeBoard$_store(builder build_0, (slice, cell, cell, cell) v) inline;
+
+;; $BadgeBoard$_load
+(slice, ((slice, cell, cell, cell))) $BadgeBoard$_load(slice sc_0) inline;
+
+;; $Context$_get_value
+_ $Context$_get_value((int, slice, int, slice) v) inline;
+
+;; $StudentBadgeSet$_get_m
+_ $StudentBadgeSet$_get_m((cell) v) inline;
+
+;; $StudentBadgeSet$_not_null
+((cell)) $StudentBadgeSet$_not_null(tuple v) inline;
+
+;; $BadgeBoard$init$_load
+(slice, ((slice))) $BadgeBoard$init$_load(slice sc_0) inline;
+
+;; $BadgeBoard$_contract_init
+(slice, cell, cell, cell) $BadgeBoard$_contract_init(slice $owner) impure inline;
+
+;; $BadgeBoard$_contract_load
+(slice, cell, cell, cell) $BadgeBoard$_contract_load() impure inline;
+
+;; $BadgeBoard$_contract_store
+() $BadgeBoard$_contract_store((slice, cell, cell, cell) v) impure inline;
+
+;; $BadgeBoard$_fun_badges
+((slice, cell, cell, cell), cell) $BadgeBoard$_fun_badges((slice, cell, cell, cell) $self, slice $student) impure inline_ref;
+
+;; $BadgeBoard$_fun_students
+((slice, cell, cell, cell), cell) $BadgeBoard$_fun_students((slice, cell, cell, cell) $self) impure inline_ref;
+
+;; $MessageParameters$_constructor_bounce_to_value_mode_body
+((int, cell, int, slice, int)) $MessageParameters$_constructor_bounce_to_value_mode_body(int $bounce, slice $to, int $value, int $mode, cell $body) inline;
+
+;; $BadgeBoard$_fun_notify
+((slice, cell, cell, cell), ()) $BadgeBoard$_fun_notify((slice, cell, cell, cell) $self, cell $body) impure inline;
+
+;; $StudentBadgeSet$_constructor_m
+((cell)) $StudentBadgeSet$_constructor_m(cell $m) inline;
+
+;; $DeployOk$_constructor_queryId
+((int)) $DeployOk$_constructor_queryId(int $queryId) inline;
+
+
+;; tact_BadgeBoard.stdlib.fc
+global (int, slice, int, slice) __tact_context;
+global slice __tact_context_sender;
+global cell __tact_child_contract_codes;
+global int __tact_randomized;
+
+forall X -> X __tact_not_null(X x) impure inline {
+    throw_if(128, null?(x)); return x;
+}
+
+(cell, int) __tact_dict_delete(cell dict, int key_len, slice index) asm(index dict key_len) """
+    DICTDEL
+""";
+
+((cell), ()) __tact_dict_set_ref(cell dict, int key_len, slice index, cell value) asm(value index dict key_len) """
+    DICTSETREF
+""";
+
+(cell, int) __tact_dict_get_ref(cell dict, int key_len, slice index) asm(index dict key_len) """
+    DICTGETREF NULLSWAPIFNOT
+""";
+
+(int, slice, int, slice) __tact_context_get() inline {
+    return __tact_context;
+}
+
+slice __tact_context_get_sender() inline {
+    return __tact_context_sender;
+}
+
+forall X0 -> tuple __tact_tuple_create_1((X0) v) asm """
+    1 TUPLE
+""";
+
+forall X0 -> (X0) __tact_tuple_destroy_1(tuple v) asm """
+    1 UNTUPLE
+""";
+
+(cell, ()) __tact_dict_set_slice_int(cell d, int kl, slice k, int v, int vl) inline {
+    if (null?(v)) {
+        var (r, ok) = __tact_dict_delete(d, kl, k);
+        return (r, ());
+    } else {
+        return (dict_set_builder(d, kl, k, begin_cell().store_int(v, vl)), ());
+    }
+}
+
+cell __tact_dict_get_slice_cell(cell d, int kl, slice k) inline {
+    var (r, ok) = __tact_dict_get_ref(d, kl, k);
+    if (ok) {
+        return r;
+    } else {
+        return null();
+    }
+}
+
+(cell, ()) __tact_dict_set_slice_cell(cell d, int kl, slice k, cell v) inline {
+    if (null?(v)) {
+        var (r, ok) = __tact_dict_delete(d, kl, k);
+        return (r, ());
+    } else {
+        return __tact_dict_set_ref(d, kl, k, v);
+    }
+}
+
+int __tact_dict_get_int_int(cell d, int kl, int k, int vl) inline {
+    var (r, ok) = idict_get?(d, kl, k);
+    if (ok) {
+        return r~load_int(vl);
+    } else {
+        return null();
+    }
+}
+
+(cell, ()) __tact_dict_set_int_int(cell d, int kl, int k, int v, int vl) inline {
+    if (null?(v)) {
+        var (r, ok) = idict_delete?(d, kl, k);
+        return (r, ());
+    } else {
+        return (idict_set_builder(d, kl, k, begin_cell().store_int(v, vl)), ());
+    }
+}
+
+int $global_myBalance() impure asm """
+    BALANCE FIRST
+""";
+
+() $global_nativeReserve(int $amount, int $mode) impure asm """
+    RAWRESERVE
+""";
+
+() $global_message((int, cell, int, slice, int) $params) impure asm """
+    NEWC
+    b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+    1 STI               // store `bounce`
+    b{000} STSLICECONST // store bounced = false and src = addr_none
+    STSLICE             // store `to`
+    SWAP
+    STGRAMS             // store `value`
+    106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+    STZEROES
+    // → Stack state
+    // s0: Builder
+    // s1: `body`
+    // s2: `mode`
+    STDICT
+    ENDC
+    SWAP
+    SENDRAWMSG
+""";
+
+((slice, cell, cell, cell), ()) $BadgeBoard$_fun_notify((slice, cell, cell, cell) $self, cell $body) impure inline {
+    var (($self'owner, $self'codeToBadge, $self'owned, $self'studentsWithBadge)) = $self;
+    slice $to = __tact_context_get_sender();
+    int $bounce = false;
+    if (false) {
+        int $balance = $global_myBalance();
+        int $balanceBeforeMessage = ($balance - $Context$_get_value(__tact_context_get()));
+        if (($balanceBeforeMessage < 0)) {
+            $global_nativeReserve(0, 0);
+            $global_message($MessageParameters$_constructor_bounce_to_value_mode_body($bounce, $to, 0, 130, $body));
+            return (($self'owner, $self'codeToBadge, $self'owned, $self'studentsWithBadge), ());
+        }
+    }
+    $global_message($MessageParameters$_constructor_bounce_to_value_mode_body($bounce, $to, 0, 66, $body));
+    return (($self'owner, $self'codeToBadge, $self'owned, $self'studentsWithBadge), ());
+}
+
+;; tact_BadgeBoard.storage.fc
+;;
+;; Type: Context
+;; TLB: _ bounceable:bool sender:address value:int257 raw:^slice = Context
+;;
+
+_ $Context$_get_value((int, slice, int, slice) v) inline {
+    var (v'bounceable, v'sender, v'value, v'raw) = v;
+    return v'value;
+}
+
+;;
+;; Type: MessageParameters
+;; TLB: _ mode:int257 body:Maybe ^cell value:int257 to:address bounce:bool = MessageParameters
+;;
+
+((int, cell, int, slice, int)) $MessageParameters$_constructor_bounce_to_value_mode_body(int $bounce, slice $to, int $value, int $mode, cell $body) inline {
+    return ($mode, $body, $value, $to, $bounce);
+}
+
+;;
+;; Type: DeployOk
+;; Header: 0xaff90f57
+;; TLB: deploy_ok#aff90f57 queryId:uint64 = DeployOk
+;;
+
+builder $DeployOk$_store(builder build_0, (int) v) inline {
+    var (v'queryId) = v;
+    build_0 = store_uint(build_0, 2952335191, 32);
+    build_0 = build_0.store_uint(v'queryId, 64);
+    return build_0;
+}
+
+cell $DeployOk$_store_cell((int) v, builder b) inline {
+    return $DeployOk$_store(b, v).end_cell();
+}
+
+((int)) $DeployOk$_constructor_queryId(int $queryId) inline {
+    return ($queryId);
+}
+
+;;
+;; Type: StudentBadgeSet
+;; TLB: _ m:dict<int257, bool> = StudentBadgeSet
+;;
+
+builder $StudentBadgeSet$_store(builder build_0, (cell) v) inline {
+    var (v'm) = v;
+    build_0 = build_0.store_dict(v'm);
+    return build_0;
+}
+
+cell $StudentBadgeSet$_store_cell((cell) v, builder b) inline {
+    return $StudentBadgeSet$_store(b, v).end_cell();
+}
+
+(slice, ((cell))) $StudentBadgeSet$_load(slice sc_0) inline {
+    var v'm = sc_0~load_dict();
+    return (sc_0, (v'm));
+}
+
+tuple $StudentBadgeSet$_as_optional((cell) v) inline {
+    var (v'm) = v;
+    return __tact_tuple_create_1(v'm);
+}
+
+tuple $StudentBadgeSet$_load_opt(cell cl) inline {
+    if (null?(cl)) {
+        return null();
+    }
+    var sc = cl.begin_parse();
+    return $StudentBadgeSet$_as_optional(sc~$StudentBadgeSet$_load());
+}
+
+_ $StudentBadgeSet$_get_m((cell) v) inline {
+    var (v'm) = v;
+    return v'm;
+}
+
+((cell)) $StudentBadgeSet$_not_null(tuple v) inline {
+    throw_if(128, null?(v));
+    var (cell vvv'm) = __tact_tuple_destroy_1(v);
+    return (vvv'm);
+}
+
+((cell)) $StudentBadgeSet$_constructor_m(cell $m) inline {
+    return ($m);
+}
+
+;;
+;; Type: BadgeBoard
+;; TLB: _ owner:address codeToBadge:dict<int257, int257> owned:dict<address, ^StudentBadgeSet{m:dict<int257, bool>}> studentsWithBadge:dict<address, bool> = BadgeBoard
+;;
+
+builder $BadgeBoard$_store(builder build_0, (slice, cell, cell, cell) v) inline {
+    var (v'owner, v'codeToBadge, v'owned, v'studentsWithBadge) = v;
+    build_0 = build_0.store_slice(v'owner);
+    build_0 = build_0.store_dict(v'codeToBadge);
+    var build_1 = begin_cell();
+    build_1 = build_1.store_dict(v'owned);
+    build_1 = build_1.store_dict(v'studentsWithBadge);
+    build_0 = store_builder_ref(build_0, build_1);
+    return build_0;
+}
+
+(slice, ((slice, cell, cell, cell))) $BadgeBoard$_load(slice sc_0) inline {
+    var v'owner = sc_0~load_msg_addr();
+    var v'codeToBadge = sc_0~load_dict();
+    slice sc_1 = sc_0~load_ref().begin_parse();
+    var v'owned = sc_1~load_dict();
+    var v'studentsWithBadge = sc_1~load_dict();
+    return (sc_0, (v'owner, v'codeToBadge, v'owned, v'studentsWithBadge));
+}
+
+(slice, ((slice))) $BadgeBoard$init$_load(slice sc_0) inline {
+    var v'owner = sc_0~load_msg_addr();
+    return (sc_0, (v'owner));
+}
+
+(slice, cell, cell, cell) $BadgeBoard$_contract_load() impure inline {
+    slice $sc = get_data().begin_parse();
+    int $loaded = $sc~load_int(1);
+    if ($loaded) {
+        return $sc~$BadgeBoard$_load();
+    }
+    else {
+        (slice $owner) = $sc~$BadgeBoard$init$_load();
+        $sc.end_parse();
+        return $BadgeBoard$_contract_init($owner);
+    }
+}
+
+() $BadgeBoard$_contract_store((slice, cell, cell, cell) v) impure inline {
+    builder b = begin_cell();
+    b = b.store_int(true, 1);
+    b = $BadgeBoard$_store(b, v);
+    set_data(b.end_cell());
+}
+
+;;
+;; Contract BadgeBoard functions
+;;
+
+(slice, cell, cell, cell) $BadgeBoard$_contract_init(slice $owner) impure inline {
+    var (($self'owner, $self'codeToBadge, $self'owned, $self'studentsWithBadge)) = (null(), null(), null(), null());
+    $self'owner = $owner;
+    return ($self'owner, $self'codeToBadge, $self'owned, $self'studentsWithBadge);
+}
+
+((slice, cell, cell, cell), cell) $BadgeBoard$_fun_badges((slice, cell, cell, cell) $self, slice $student) impure inline_ref {
+    var (($self'owner, $self'codeToBadge, $self'owned, $self'studentsWithBadge)) = $self;
+    tuple $innerOpt = $StudentBadgeSet$_load_opt(__tact_dict_get_slice_cell($self'owned, 267, $student));
+    if (null?($innerOpt)) {
+        var $fresh$ret_0 = null();
+        return (($self'owner, $self'codeToBadge, $self'owned, $self'studentsWithBadge), $fresh$ret_0);
+    }
+    var $fresh$ret_1 = $StudentBadgeSet$_get_m($StudentBadgeSet$_not_null($innerOpt));
+    return (($self'owner, $self'codeToBadge, $self'owned, $self'studentsWithBadge), $fresh$ret_1);
+}
+
+((slice, cell, cell, cell), cell) $BadgeBoard$_fun_students((slice, cell, cell, cell) $self) impure inline_ref {
+    var (($self'owner, $self'codeToBadge, $self'owned, $self'studentsWithBadge)) = $self;
+    var $fresh$ret_2 = $self'studentsWithBadge;
+    return (($self'owner, $self'codeToBadge, $self'owned, $self'studentsWithBadge), $fresh$ret_2);
+}
+
+;;
+;; Get methods of a Contract BadgeBoard
+;;
+
+_ %badges(slice $student) method_id(86054) {
+    slice $student = $student;
+    var self = $BadgeBoard$_contract_load();
+    var res = self~$BadgeBoard$_fun_badges($student);
+    return res;
+}
+
+_ %students() method_id(82957) {
+    var self = $BadgeBoard$_contract_load();
+    var res = self~$BadgeBoard$_fun_students();
+    return res;
+}
+
+;;
+;; Routing of a Contract BadgeBoard
+;;
+
+;; message opcode reader utility: only binary receivers
+;; Returns 32 bit message opcode, otherwise throws the "Invalid incoming message" exit code
+(slice, int) ~load_opcode_internal(slice s) asm( -> 1 0) "32 LDUQ 130 THROWIFNOT";
+
+() recv_internal(int msg_value, cell in_msg_cell, slice in_msg) impure {
+    
+    ;; Context
+    var cs = in_msg_cell.begin_parse();
+    cs~skip_bits(2);
+    var msg_bounceable = cs~load_int(1);
+    var msg_bounced = cs~load_int(1);
+    slice msg_sender_addr = cs~load_msg_addr();
+    __tact_context = (msg_bounceable, msg_sender_addr, msg_value, cs);
+    __tact_context_sender = msg_sender_addr;
+    
+    ;; Load contract data
+    var ($self'owner, $self'codeToBadge, $self'owned, $self'studentsWithBadge) = $BadgeBoard$_contract_load();
+    
+    ;; Handle bounced messages
+    if (msg_bounced) { return (); }
+    var op = in_msg~load_opcode_internal();
+    ;; Receive SetCodeBadge message
+    if (op == 1567585297) {
+        var $msg'hashCode = in_msg~load_int(257);
+        var $msg'badge = in_msg~load_int(257);
+        throw_unless(47989, ( equal_slices_bits(__tact_context_get_sender(), $self'owner) ));
+        $self'codeToBadge~__tact_dict_set_int_int(257, $msg'hashCode, $msg'badge, 257);
+        $BadgeBoard$_contract_store(($self'owner, $self'codeToBadge, $self'owned, $self'studentsWithBadge));
+        return ();
+    }
+    
+    ;; Receive ClaimByCode message
+    if (op == 122640361) {
+        var $msg'hashCode = in_msg~load_int(257);
+        int $badgeOpt = __tact_dict_get_int_int($self'codeToBadge, 257, $msg'hashCode, 257);
+        throw_unless(55111, (~ null?($badgeOpt)));
+        int $badge = __tact_not_null($badgeOpt);
+        slice $who = __tact_context_get_sender();
+        tuple $innerOpt = $StudentBadgeSet$_load_opt(__tact_dict_get_slice_cell($self'owned, 267, $who));
+        cell $m = ((~ null?($innerOpt)) ? $StudentBadgeSet$_get_m($StudentBadgeSet$_not_null($innerOpt)) : null());
+        $m~__tact_dict_set_int_int(257, $badge, true, 1);
+        $self'owned~__tact_dict_set_slice_cell(267, $who, $StudentBadgeSet$_store_cell($StudentBadgeSet$_constructor_m($m), begin_cell()));
+        $self'studentsWithBadge~__tact_dict_set_slice_int(267, $who, true, 1);
+        $BadgeBoard$_contract_store(($self'owner, $self'codeToBadge, $self'owned, $self'studentsWithBadge));
+        return ();
+    }
+    
+    ;; Receive Deploy message
+    if (op == 0x946a98b6) {
+        var $deploy'queryId = in_msg~load_uint(64);
+        ($self'owner, $self'codeToBadge, $self'owned, $self'studentsWithBadge)~$BadgeBoard$_fun_notify($DeployOk$_store_cell($DeployOk$_constructor_queryId($deploy'queryId), begin_cell()));
+        $BadgeBoard$_contract_store(($self'owner, $self'codeToBadge, $self'owned, $self'studentsWithBadge));
+        return ();
+    }
+    
+    ;; Throw if not handled
+    throw(130);
+}
+
+
+() __tact_selector_hack_asm() impure asm """
+@atend @ 1 {
+        execute current@ context@ current!
+        {
+            // The core idea of this function is to save gas by avoiding unnecessary dict jump, when recv_internal/recv_external is called
+            // We want to extract recv_internal/recv_external from the dict and select needed function
+            // not by jumping to the needed function by it's index, but by using usual IF statements.
+
+            }END> b> // Close previous builder, now we have a cell of previous code on top of the stack
+
+            <{ // Start of the new code builder
+                SETCP0
+                // Swap the new code builder with the previous code, now we have previous code on top of the stack
+                swap
+                // Transform cell to slice and load first ref from the previous code, now we have the dict on top of the stack
+                <s ref@
+
+                // Extract the recv_internal from the dict
+                dup 0 swap @procdictkeylen idict@ { "internal shortcut error" abort } ifnot
+                swap
+
+                // Delete the recv_internal from the dict
+                0 swap @procdictkeylen idict- drop
+                // Delete the recv_external from the dict (it's okay if it's not there)
+                -1 swap @procdictkeylen idict- drop
+                // Delete the __tact_selector_hack from the dict
+                65535 swap @procdictkeylen idict- drop
+
+                // Bring the code builder from the bottom of the stack
+                // because if recv_external extraction is optional, and the number of elements on the stack is not fixed
+                depth 1- roll
+                // Swap with the dict from which we extracted recv_internal and (maybe) recv_external
+                swap
+
+                // Check if the dict is empty
+                dup null?
+                // Store a copy of this flag in the bottom of the stack
+                dup depth 1- -roll
+                {
+                    // If the dict is empty, just drop it (it will be null if it's empty)
+                    drop
+                }
+                {
+                    // If the dict is not empty, prepare continuation to be stored in c3
+                    <{
+                        // Save this dict as first ref in this continuation, it will be pushed in runtime by DICTPUSHCONST
+                        swap @procdictkeylen DICTPUSHCONST
+                        // Jump to the needed function by it's index
+                        DICTIGETJMPZ
+                        // If such key is not found, throw 11 along with the key as an argument
+                        11 THROWARG
+                    }> PUSHCONT
+                    // Store the continuation in c3
+                    c3 POP
+                } cond
+
+                // Function id is on top of the (runtime) stack
+                DUP IFNOTJMP:<{
+                    // place recv_internal here
+                    DROP swap @addop
+                }>
+
+                // Bring back the flag, indicating if the dict is empty or not from the bottom of the stack
+                depth 1- roll
+                {
+                    // If the dict is empty, throw 11
+                    11 THROWARG
+                }
+                {
+                    // If the dict is not empty, jump to continuation from c3
+                    c3 PUSH JMPX
+                } cond
+            }> b>
+        } : }END>c
+        current@ context! current!
+    } does @atend !
+""";
+
+() __tact_selector_hack() method_id(65535) {
+    return __tact_selector_hack_asm();
+}
