@@ -1,0 +1,11 @@
+RENDER — Kotlin API (backend-kotlin) в Docker
+
+Сервис остаётся Spring Boot в папке backend-kotlin. На Render он собирается через корневой Dockerfile (JVM внутри образа).
+
+1) Закоммить и запушь: Dockerfile, .dockerignore, render.yaml, backend-kotlin/...
+2) Render → New → Blueprint ИЛИ Web Service.
+3) Runtime: Docker (не Node). Dockerfile Path: Dockerfile. Docker Build Context: . (корень репо).
+4) Root Directory: пусто. Build Command / Start Command: пусто.
+5) Health: GET .../api/health
+
+Папка backend-node (если была) — лишняя копия API на JS, её нужно удалить из репозитория.

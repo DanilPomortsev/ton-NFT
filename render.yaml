@@ -1,14 +1,12 @@
-# Render Blueprint: New → Blueprint → репозиторий.
-#
-# Если сервис уже создан как Node: Settings → удалить сервис или создать новый Web Service
-# с Environment = Docker (не Native Node). Build/Start command оставить пустыми.
-#
-# Либо подключи этот blueprint заново.
+# Render Blueprint: Kotlin/Spring Boot в Docker (корневой Dockerfile собирает backend-kotlin).
+# В Render: Runtime = Docker, Dockerfile Path = Dockerfile, Root Directory пустой,
+# Build Command и Start Command пустые.
 
 services:
   - type: web
     name: attendance-backend
     runtime: docker
     dockerfilePath: ./Dockerfile
+    dockerContext: .
     plan: free
     healthCheckPath: /api/health
