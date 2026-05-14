@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { TonConnectButton, useTonAddress, useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
 
 import { buildClaimByCodePayload } from '@/lib/badgeBoard';
@@ -56,6 +56,40 @@ function chainBadgeImageUrl(badgeId: string): string {
     return path;
   }
   return `${API_BASE}${path}`;
+}
+
+/**
+ * В TWA/WebView иногда приходит второй `error` после успешного `load` (abort/lazy/decode).
+ * Не считаем бейдж «битым», если картинка уже успела отрисоваться.
+ */
+function ChainBadgeImage({
+  badgeId,
+  src,
+  onBroken,
+}: {
+  badgeId: string;
+  src: string;
+  onBroken: (badgeId: string) => void;
+}) {
+  const loadedOk = useRef(false);
+
+  return (
+    <img
+      src={src}
+      alt={`badge ${badgeId}`}
+      className="badge-image"
+      decoding="async"
+      onLoad={() => {
+        loadedOk.current = true;
+      }}
+      onError={() => {
+        if (loadedOk.current) {
+          return;
+        }
+        onBroken(badgeId);
+      }}
+    />
+  );
 }
 
 export const HomePage = () => {
@@ -242,14 +276,12 @@ export const HomePage = () => {
             {b.hashCode ? <div>hashCode: {b.hashCode}</div> : null}
             {b.badge ? <div>label: {b.badge}</div> : null}
             {b.imageUrl && !b.imageLoadError ? (
-              <img
+              <ChainBadgeImage
+                badgeId={b.badgeId}
                 src={b.imageUrl}
-                alt={`badge ${b.badgeId}`}
-                className="badge-image"
-                loading="lazy"
-                onError={() => {
+                onBroken={(id) => {
                   setStudentBadges((prev) =>
-                    prev.map((row) => (row.badgeId === b.badgeId ? { ...row, imageLoadError: true } : row)),
+                    prev.map((row) => (row.badgeId === id ? { ...row, imageLoadError: true } : row)),
                   );
                 }}
               />
