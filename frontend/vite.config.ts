@@ -31,9 +31,21 @@ function resolveTonRpcEndpoint(mode: string) {
   ).trim();
 }
 
+function resolveApiBase(mode: string) {
+  const local = loadEnv(mode, rootDir, '');
+  const parent = loadEnv(mode, path.join(rootDir, '..'), '');
+  return (
+    local.VITE_API_BASE ||
+    parent.VITE_API_BASE ||
+    process.env.VITE_API_BASE ||
+    ''
+  ).trim();
+}
+
 export default defineConfig(({ mode }) => {
   const contractAddress = resolveContractAddress(mode);
   const tonRpc = resolveTonRpcEndpoint(mode);
+  const apiBase = resolveApiBase(mode);
 
   const devProxyTarget = process.env.VITE_DEV_PROXY_TARGET || 'http://127.0.0.1:8080';
   const defaultAllowedHosts = ['localhost', '127.0.0.1'];
@@ -49,6 +61,7 @@ export default defineConfig(({ mode }) => {
       // Явно пробрасываем в клиент, чтобы работали корневой .env и имя CONTRACT_ADDRESS на CI.
       'import.meta.env.VITE_CONTRACT_ADDRESS': JSON.stringify(contractAddress),
       ...(tonRpc ? { 'import.meta.env.VITE_TON_RPC_ENDPOINT': JSON.stringify(tonRpc) } : {}),
+      ...(apiBase ? { 'import.meta.env.VITE_API_BASE': JSON.stringify(apiBase) } : {}),
     },
     plugins: [react()],
     resolve: {

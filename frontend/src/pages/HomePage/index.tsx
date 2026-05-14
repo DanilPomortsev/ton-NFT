@@ -12,12 +12,14 @@ type TgUser = {
 };
 
 type StudentBadgeView = {
-  /** On-chain badge id (из getter `badges`). */
+  /** On-chain badge id (ключ словаря из getter `badges`). */
   badgeId: string;
   hashCode?: string;
   badge?: string;
+  /** Полный URL картинки на бэкенде: `/api/badge/on-chain/{badgeId}/image`. */
   imageUrl?: string | null;
   imageBase64?: string | null;
+  imageLoadError?: boolean;
 };
 
 declare global {
@@ -42,6 +44,19 @@ const CONTRACT_ADDRESS = (
   DEFAULT_BADGEBOARD_ADDRESS
 ).trim();
 const TON_RPC_ENDPOINT = import.meta.env.VITE_TON_RPC_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC';
+
+/** База Kotlin API (без завершающего `/`). Пример: `https://….onrender.com` или `http://127.0.0.1:8080`. */
+const API_BASE = String(import.meta.env.VITE_API_BASE || '')
+  .trim()
+  .replace(/\/$/, '');
+
+function chainBadgeImageUrl(badgeId: string): string {
+  const path = `/api/badge/on-chain/${encodeURIComponent(badgeId)}/image`;
+  if (!API_BASE) {
+    return path;
+  }
+  return `${API_BASE}${path}`;
+}
 
 export const HomePage = () => {
   const tonAddress = useTonAddress();
@@ -161,12 +176,20 @@ export const HomePage = () => {
     }
 
     setStudentBadges(
-      badgeIds.map((id) => ({
-        badgeId: id.toString(),
-        badge: id.toString(),
-      })),
+      badgeIds.map((id) => {
+        const idStr = id.toString();
+        return {
+          badgeId: idStr,
+          badge: idStr,
+          imageUrl: chainBadgeImageUrl(idStr),
+          imageLoadError: false,
+        };
+      }),
     );
-    setLog(`Loaded ${badgeIds.length} badge id(s) from chain (getter badges)`);
+    setLog(
+      `Loaded ${badgeIds.length} badge id(s) from chain (getter badges)` +
+        (API_BASE ? '' : ' — задай VITE_API_BASE, иначе превью укажет на origin и может не открыться.'),
+    );
   }
 
   return (
@@ -207,13 +230,36 @@ export const HomePage = () => {
 
       <div className="card">
         <h3>My badges</h3>
+        <p className="hint">
+          Список id из контракта (<code>badges</code>); картинка с бэкенда по{' '}
+          <code>/api/badge/on-chain/&lt;id&gt;/image</code> (тот же id, что при upload с{' '}
+          <code>badgeIdOnChain</code>).
+        </p>
         <button onClick={() => loadMyBadges().catch((e) => setLog(String(e?.message || e)))}>Load from chain</button>
         {studentBadges.map((b) => (
           <div key={b.badgeId} style={{ borderTop: '1px solid #2c3f72', marginTop: 10, paddingTop: 10 }}>
             <div>badgeId: {b.badgeId}</div>
             {b.hashCode ? <div>hashCode: {b.hashCode}</div> : null}
-            {b.badge ? <div>badge: {b.badge}</div> : null}
-            {b.imageUrl ? <img src={b.imageUrl} alt={b.badgeId} className="badge-image" /> : null}
+            {b.badge ? <div>label: {b.badge}</div> : null}
+            {b.imageUrl && !b.imageLoadError ? (
+              <img
+                src={b.imageUrl}
+                alt={`badge ${b.badgeId}`}
+                className="badge-image"
+                loading="lazy"
+                onError={() => {
+                  setStudentBadges((prev) =>
+                    prev.map((row) => (row.badgeId === b.badgeId ? { ...row, imageLoadError: true } : row)),
+                  );
+                }}
+              />
+            ) : null}
+            {b.imageUrl && b.imageLoadError ? (
+              <div className="hint" style={{ marginTop: 6 }}>
+                Нет картинки на бэкенде для id {b.badgeId} (404 или другой хост). Проверь upload с тем же{' '}
+                <code>badgeIdOnChain</code> и <code>VITE_API_BASE</code>.
+              </div>
+            ) : null}
             {b.imageBase64 ? <img src={b.imageBase64} alt={b.badgeId} className="badge-image" /> : null}
           </div>
         ))}
