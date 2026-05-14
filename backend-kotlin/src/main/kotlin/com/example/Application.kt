@@ -50,6 +50,8 @@ data class TeacherBadgeUploadResponse(
     /** То же значение в десятичном виде для ввода в скрипты / кошелёк (ClaimByCode / SetCodeBadge). */
     val hashCodeDecimal: String,
     val badgeIdOnChain: Long? = null,
+    /** GET картинки по on-chain id (если задан `badgeIdOnChain` и есть бинарь/base64). */
+    val imageByChainIdUrl: String? = null,
 )
 
 data class StudentBadgesRequest(
@@ -60,10 +62,13 @@ data class StudentBadgeView(
     val hashCode: String,
     val hashCodeDecimal: String? = null,
     val badge: String,
+    val badgeIdOnChain: Long? = null,
     val imageUrl: String? = null,
     val imageBase64: String? = null,
     /** URL картинки на этом сервере (если бинарь был сохранён при загрузке). */
     val imagePublicUrl: String? = null,
+    /** Картинка по `badgeIdOnChain` (если он был задан при upload). */
+    val imageByChainIdUrl: String? = null,
 )
 
 data class StudentBadgesResponse(
@@ -83,6 +88,8 @@ data class BadgeAsset(
 
 private val eventCodes = ConcurrentHashMap<String, String>()
 private val badgeAssetsByHash = ConcurrentHashMap<String, BadgeAsset>()
+/** Последний загруженный бейдж с данным `badgeIdOnChain` → hash (hex). */
+private val hashByBadgeIdOnChain = ConcurrentHashMap<Long, String>()
 
 @SpringBootApplication
 class AttendanceBackendApplication {
@@ -236,16 +243,20 @@ class ApiController {
             if (asset == null) {
                 notFound.add(hash)
             } else {
+                val hasImage = asset.imageBytes != null || !asset.imageBase64.isNullOrBlank()
+                val chainId = asset.badgeIdOnChain
                 found.add(
                     StudentBadgeView(
                         hashCode = hash,
                         hashCodeDecimal = sha256AsPositiveDecimal(asset.badge),
                         badge = asset.badge,
+                        badgeIdOnChain = chainId,
                         imageUrl = asset.imageUrl,
                         imageBase64 = asset.imageBase64,
-                        imagePublicUrl =
-                            if (asset.imageBytes != null || !asset.imageBase64.isNullOrBlank()) {
-                                "/api/badge/$hash/image"
+                        imagePublicUrl = if (hasImage) "/api/badge/$hash/image" else null,
+                        imageByChainIdUrl =
+                            if (hasImage && chainId != null) {
+                                "/api/badge/on-chain/$chainId/image"
                             } else {
                                 null
                             },
@@ -281,6 +292,13 @@ class ApiController {
             return ResponseEntity.badRequest().build()
         }
         val hash = sha256Hex(badge)
+        return imageEntityForHash(hash)
+    }
+
+    /** Картинка по `badgeIdOnChain`, переданному при upload (последняя загрузка с этим id). */
+    @GetMapping("/badge/on-chain/{badgeIdOnChain}/image")
+    fun getBadgeImageByChainId(@PathVariable badgeIdOnChain: Long): ResponseEntity<ByteArray> {
+        val hash = hashByBadgeIdOnChain[badgeIdOnChain] ?: return ResponseEntity.notFound().build()
         return imageEntityForHash(hash)
     }
 
@@ -327,6 +345,9 @@ class ApiController {
                 imageContentType = imageContentType,
                 badgeIdOnChain = badgeIdOnChain,
             )
+        if (badgeIdOnChain != null) {
+            hashByBadgeIdOnChain[badgeIdOnChain] = hashHex
+        }
 
         return TeacherBadgeUploadResponse(
             ok = true,
@@ -334,6 +355,12 @@ class ApiController {
             hashCode = hashHex,
             hashCodeDecimal = hashDecimal,
             badgeIdOnChain = badgeIdOnChain,
+            imageByChainIdUrl =
+                if (badgeIdOnChain != null && (imageBytes != null || !imageBase64.isNullOrBlank())) {
+                    "/api/badge/on-chain/$badgeIdOnChain/image"
+                } else {
+                    null
+                },
         )
     }
 }
