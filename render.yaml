@@ -1,0 +1,11 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# Dashboard → New → Blueprint → выбери репозиторий (файл в корне репо).
+
+services:
+  - type: web
+    name: attendance-backend
+    runtime: docker
+    dockerfilePath: ./backend-kotlin/Dockerfile
+    dockerContext: ./backend-kotlin
+    plan: free
+    healthCheckPath: /api/health
