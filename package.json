@@ -11,11 +11,11 @@
   },
   "dependencies": {
     "buffer": "^6.0.3",
+    "@ton/core": "^0.62.0",
     "@ton/ton": "^15.4.0",
     "@tonconnect/ui-react": "^2.0.9",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "ton-core": "^0.53.0"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@types/react": "^18.3.11",
